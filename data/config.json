@@ -1,0 +1,7 @@
+{
+  "base_demand": 100,
+  "elasticity": 1.5,
+  "initial_inventory": 500,
+  "time_steps": 100,
+  "max_customers_per_step": 120
+}
