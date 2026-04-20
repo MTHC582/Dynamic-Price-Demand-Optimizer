@@ -21,10 +21,6 @@ Requires Python 3.x and the following dependencies:
 ```bash
 pip install pandas matplotlib numpy streamlit
 ```
-Or use the provided requirements file:
-```bash
-pip install -r requirements.txt
-```
 
 ## Usage
 
