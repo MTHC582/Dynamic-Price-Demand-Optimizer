@@ -1,0 +1,8 @@
+{
+  "base_demand": 100,
+  "sensitivity": 1.5,
+  "initial_inventory": 500,
+  "simulation_days": 100,
+  "max_customers_per_day": 120,
+  "base_price": 100.0
+}
