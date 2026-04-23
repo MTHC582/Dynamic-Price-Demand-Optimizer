@@ -1,66 +1,84 @@
+# python file for my strategies
 
-# base class for all strategies
-# every strategy needs to have a calculate_price method
-class PricingStrategy:
-    def calculate_price(self, ctx):
-        pass   # will be filled by child class
-
+# class PricingStrategy:
+#     pass
 
 # Strategy 1 - just returns a fixed price always
-# using this to compare with other strategies
-class StaticPricing(PricingStrategy):
-    def calculate_price(self, ctx):
-        p = ctx.get("base_price", 100.0)
-        return p
+# using this to compare with my other strategies
+class StaticPricing:
+    def calculate_price(self, my_info_dict):
+        # get the price. if not there, use 100
+        if "base_price" in my_info_dict:
+            my_price = my_info_dict["base_price"]
+        else:
+            my_price = 100.0
+
+        return my_price
 
 
 # Strategy 2 - changes price based on how much stock is left and time remaining
-class DynamicPricing(PricingStrategy):
-    def calculate_price(self, ctx):
-        curr_inv   = ctx["inventory"]
-        start_inv  = ctx["initial_inventory"]
-        curr_day   = ctx["time_step"]
-        total_days = ctx["total_steps"]
-        p          = ctx.get("base_price", 100.0)
+class DynamicPricing:
+    def calculate_price(self, info):
+        stock_now = info["inventory"]
+        start_stock = info["initial_inventory"]
+        day_now = info["time_step"]
+        total_days = info["total_steps"]
 
-        # ratio of time left
-        t_ratio = (total_days - curr_day) / total_days
-        # ratio of stock left
-        s_ratio = curr_inv / start_inv
+        if "base_price" in info:
+            my_price = info["base_price"]
+        else:
+            my_price = 100.0
 
-        # if we have more stock than expected at this time
-        if s_ratio > t_ratio + 0.1:
-            return p * 0.85   # sell cheaper to move stock
+        # math to see how much time left
+        time_left_percent = (total_days - day_now) / total_days
 
-        # if we're running out faster than expected
-        if s_ratio < t_ratio - 0.1:
-            return p * 1.25   # can charge more
+        # math to see how much stock left
+        stock_left_percent = stock_now / start_stock
 
-        return p   # no change, things are balanced
+        # check if we are stuck with too much stock
+        if stock_left_percent > time_left_percent + 0.1:
+            return my_price * 0.85  # discount it by 15 percent
+
+        # check if we are selling out too fast
+        if stock_left_percent < time_left_percent - 0.1:
+            return my_price * 1.25  # make it more expensive
+
+        # otherwise return normal price
+        return my_price
 
 
 # Strategy 3 - uses an urgency score to decide price changes
-# urgency = how much stock we have vs how much time we have
-class AdvancedPricing(PricingStrategy):
-    def calculate_price(self, ctx):
-        curr_inv   = ctx["inventory"]
-        start_inv  = ctx["initial_inventory"]
-        curr_day   = ctx["time_step"]
-        total_days = ctx["total_steps"]
-        p          = ctx.get("base_price", 100.0)
+class AdvancedPricing:
+    def calculate_price(self, data):
+        stock = data["inventory"]
+        start = data["initial_inventory"]
+        day = data["time_step"]
+        total = data["total_steps"]
 
-        t_left  = max((total_days - curr_day) / total_days, 0.01)
-        s_ratio = curr_inv / start_inv
+        if "base_price" in data:
+            price = data["base_price"]
+        else:
+            price = 100.0
 
-        urgency = s_ratio / t_left   # > 1 means too much stock left
+        time_left = (total - day) / total
+        if time_left < 0.01:
+            time_left = 0.01  # prevent divide by zero error i got here before
 
-        if urgency > 1.5:
-            return p * 0.70   # lots of stock, big discount
-        elif urgency > 1.1:
-            return p * 0.90   # a bit overstocked, small discount
-        elif urgency < 0.4:
-            return p * 1.50   # running very low, charge premium
-        elif urgency < 0.8:
-            return p * 1.15   # getting low, small increase
+        stock_ratio = stock / start
 
-        return p   # somewhere in the middle, keep price
+        # urgency score
+        urg = stock_ratio / time_left
+
+        # print("urgency is", urg)
+
+        if urg > 1.5:
+            new_price = price * 0.70  # mega sale
+            return new_price
+        if urg > 1.1:
+            return price * 0.90  # mini sale
+        if urg < 0.4:
+            return price * 1.50
+        if urg < 0.8:
+            return price * 1.15
+
+        return price

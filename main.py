@@ -7,75 +7,107 @@ from core.strategies import StaticPricing, DynamicPricing, AdvancedPricing
 
 
 # runs all strategies on a few different market configs to test robustness
-def stress_test(base_cfg):
-    print("\nStress Test")
+def my_stress_test(base_cfg):
+    print("")
+    print("Stress Test")
 
-    test_cases = [
-        {"name": "Low demand",     "base_demand": 50,  "sensitivity": 1.5},
-        {"name": "High demand",    "base_demand": 150, "sensitivity": 1.0},
-        {"name": "Very sensitive", "base_demand": 100, "sensitivity": 2.2},
-        {"name": "Less stock",     "initial_inventory": 200},
-    ]
+    # setup test cases manually
+    case1 = {"name": "Low demand", "base_demand": 50, "sensitivity": 1.5}
+    case2 = {"name": "High demand", "base_demand": 150, "sensitivity": 1.0}
+    case3 = {"name": "Very sensitive", "base_demand": 100, "sensitivity": 2.2}
+    case4 = {"name": "Less stock", "initial_inventory": 200}
 
-    strats = {
-        "static":   StaticPricing(),
-        "dynamic":  DynamicPricing(),
-        "advanced": AdvancedPricing(),
-    }
+    my_tests = [case1, case2, case3, case4]
 
-    win_count = {}
+    strats = {}
+    strats["static"] = StaticPricing()
+    strats["dynamic"] = DynamicPricing()
+    strats["advanced"] = AdvancedPricing()
 
-    for i, case in enumerate(test_cases, 1):
-        label = case.pop("name")
-        cfg   = copy.deepcopy(base_cfg)
-        cfg.update(case)
+    # keep track of wins
+    win_tally = {"static": 0, "dynamic": 0, "advanced": 0}
 
-        print(f"  Test {i} - {label}")
+    counter = 1
+    for t_case in my_tests:
+        # get name then delete it so it doesnt mess up config
+        lbl = t_case["name"]
+        del t_case["name"]
 
-        sim   = PricingSimulator(cfg)
-        res   = sim.run_all(strats, show_log=False)
-        best  = max(res, key=lambda k: res[k]["revenue"])
+        # copy dict so we don't change the original
+        config_copy = copy.deepcopy(base_cfg)
+        for key in t_case:
+            config_copy[key] = t_case[key]
 
-        print(f"    best: {best}")
-        win_count[best] = win_count.get(best, 0) + 1
+        print("  Test " + str(counter) + " - " + lbl)
 
-    overall = max(win_count, key=win_count.get)
-    print(f"\n  Most wins overall: {overall}")
+        sim = PricingSimulator(config_copy)
+        r = sim.run_all(strats, show_print=False)
+
+        # find the best one
+        highest_rev = 0
+        best_strat = ""
+        for s_name in r:
+            rev_here = r[s_name]["revenue"]
+            if rev_here > highest_rev:
+                highest_rev = rev_here
+                best_strat = s_name
+
+        print("    best was:", best_strat)
+        win_tally[best_strat] = win_tally[best_strat] + 1
+
+        counter = counter + 1
+
+    # find who has most wins
+    max_wins = -1
+    overall_best = ""
+    for key in win_tally:
+        if win_tally[key] > max_wins:
+            max_wins = win_tally[key]
+            overall_best = key
+
+    print("")
+    print("  Most wins overall:", overall_best)
     print("")
 
 
 def main():
-    print("Dynamic Pricing Simulator\n")
+    print("Dynamic Pricing Simulator")
+    print("")
 
+    # read config
+    config = {}
     try:
-        with open("config.json", "r") as f:
-            config = json.load(f)
-        print("config loaded")
+        f = open("config.json", "r")
+        config = json.load(f)
+        f.close()  # don't forget to close!
+        print("config loaded ok")
     except Exception as e:
-        print(f"Error: {e}")
+        print("Error loading config!", e)
         sys.exit(1)
 
-    print("Config:")
-    for k, v in config.items():
-        print(f"  {k} = {v}")
+    print("Config values:")
+    for key in config:
+        print("  " + key + " = " + str(config[key]))
 
-    strats = {
-        "static":   StaticPricing(),
-        "dynamic":  DynamicPricing(),
-        "advanced": AdvancedPricing(),
-    }
+    # run it!
+    strats = {}
+    strats["static"] = StaticPricing()
+    strats["dynamic"] = DynamicPricing()
+    strats["advanced"] = AdvancedPricing()
 
-    sim     = PricingSimulator(config)
-    results = sim.run_all(strats)
+    sim = PricingSimulator(config)
+    res = sim.run_all(strats)
 
-    analyzer = SimulationAnalyzer(results)
+    analyzer = SimulationAnalyzer(res)
     analyzer.print_summary()
     analyzer.save_outputs()
 
-    stress_test(config)
+    # run stress test at the end
+    my_stress_test(config)
 
-    print("Done. Check output/ for files.")
+    print("Done. Check the output folder for the files.")
 
 
+# If You run from this file ,use "python main.py" in terminal
 if __name__ == "__main__":
     main()

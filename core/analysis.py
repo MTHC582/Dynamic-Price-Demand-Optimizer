@@ -3,90 +3,127 @@ import pandas as pd
 import os
 
 
+# analyzes the simulation results and makes plots
 class SimulationAnalyzer:
-    def __init__(self, results):
-        self.results = results
+    def __init__(self, the_results):
+        self.results = the_results
 
     # prints a summary of revenue for each strategy
     def print_summary(self):
-        print("\nSummary")
+        print("")
+        print("Summary")
 
-        best_name = None
-        best_rev = 0
-        rev_map = {}
+        best_strat_name = ""
+        best_money = -1
+        money_tracker = {}
 
-        for name, data in self.results.items():
-            r = data["revenue"]
-            s = data["data"]["sold"].sum()
-            lf = data["leftover"]
-            rev_map[name] = r
-            print(f"  {name} -> revenue: {r:.0f}, sold: {s}, left: {lf}")
+        for key in self.results:
+            data_row = self.results[key]
+            rev = data_row["revenue"]
+            # sum up the sold column
+            total_sold = data_row["data"]["sold"].sum()
+            left = data_row["leftover"]
 
-            if r > best_rev:
-                best_rev = r
-                best_name = name
+            money_tracker[key] = rev
+            print(
+                "  "
+                + key
+                + " -> revenue: "
+                + str(round(rev, 0))
+                + ", sold: "
+                + str(total_sold)
+                + ", left: "
+                + str(left)
+            )
 
-        print(f"\n  Winner: {best_name}")
+            if rev > best_money:
+                best_money = rev
+                best_strat_name = key
+
+        print("")
+        print("  Winner:", best_strat_name)
 
         # show % gain vs static
-        base = rev_map.get("static", 1)
-        for name, r in rev_map.items():
-            if name == "static":
-                continue
-            gain = ((r - base) / base) * 100
-            print(f"  {name} is {gain:.1f}% better than static")
+        if "static" in money_tracker:
+            base_money = money_tracker["static"]
+        else:
+            base_money = 1  # avoid dividing by zero just in case
+
+        for key in money_tracker:
+            rmoney = money_tracker[key]
+            if key == "static":
+                pass  # skip static
+            else:
+                difference = rmoney - base_money
+                percent_gain = (difference / base_money) * 100
+                gain_rounded = round(percent_gain, 1)
+                print("  " + key + " is " + str(gain_rounded) + "% better than static")
 
     # saves a CSV and 3 graphs to the output folder
-    def save_outputs(self, out_dir="output"):
-        os.makedirs(out_dir, exist_ok=True)
-        os.makedirs(f"{out_dir}/graphs", exist_ok=True)
+    def save_outputs(self, my_folder="output"):
+        # try to make directories so it doesnt crash if they exist
+        try:
+            os.makedirs(my_folder)
+        except:
+            pass
+
+        try:
+            os.makedirs(my_folder + "/graphs")
+        except:
+            pass
 
         # combine all data and save to csv
-        all_data = []
-        for name, data in self.results.items():
-            df = data["data"].copy()
-            df["strategy_name"] = name
-            all_data.append(df)
+        list_of_frames = []
+        for n in self.results:
+            df = self.results[n]["data"].copy()
+            df["strategy_name"] = n
+            list_of_frames.append(df)
 
-        pd.concat(all_data, ignore_index=True).to_csv(
-            f"{out_dir}/results.csv", index=False
-        )
-        print(f"  saved results.csv")
+        big_df = pd.concat(list_of_frames, ignore_index=True)
+        big_df.to_csv(my_folder + "/results.csv", index=False)
+        print("  saved results.csv to out folder")
 
         # graph 1 - revenue over time
         plt.figure(figsize=(10, 5))
-        for name, data in self.results.items():
-            df = data["data"]
-            plt.plot(df["day"], df["total_revenue"], label=name)
+        for n in self.results:
+            df = self.results[n]["data"]
+            plt.plot(df["day"], df["total_revenue"], label=n)
+
         plt.title("Revenue over time")
-        plt.xlabel("Day")
-        plt.ylabel("Revenue")
+        plt.xlabel("Day of simulation")
+        plt.ylabel("Total Revenue so far")
         plt.legend()
         plt.grid(True)
-        plt.savefig(f"{out_dir}/graphs/revenue_vs_time.png")
+        plt.savefig(my_folder + "/graphs/revenue_vs_time.png")
         plt.close()
 
         # graph 2 - price changes
         plt.figure(figsize=(10, 5))
-        for name, data in self.results.items():
-            df = data["data"]
-            plt.plot(df["day"], df["price"], label=name)
+        for n in self.results:
+            df = self.results[n]["data"]
+            plt.plot(df["day"], df["price"], label=n)
+
         plt.title("Price changes over time")
         plt.xlabel("Day")
-        plt.ylabel("Price")
+        plt.ylabel("What is the Price")
         plt.legend()
         plt.grid(True)
-        plt.savefig(f"{out_dir}/graphs/price_over_time.png")
+        plt.savefig(my_folder + "/graphs/price_over_time.png")
         plt.close()
 
         # graph 3 - bar chart of total revenue
         plt.figure(figsize=(7, 5))
-        names = list(self.results.keys())
-        revs = [self.results[s]["revenue"] for s in names]
-        plt.bar(names, revs, color=["gray", "steelblue", "seagreen"])
-        plt.title("Total Revenue Comparison")
-        plt.ylabel("Revenue")
-        plt.savefig(f"{out_dir}/graphs/strategy_comparison.png")
+        nm_list = []
+        rev_list = []
+
+        for n in self.results:
+            nm_list.append(n)
+            rev_list.append(self.results[n]["revenue"])
+
+        plt.bar(nm_list, rev_list, color=["gray", "blue", "green"])
+        plt.title("Total Revenue Comparison - who won")
+        plt.ylabel("Revenue Amount")
+        plt.savefig(my_folder + "/graphs/strategy_comparison.png")
         plt.close()
 
-        print(f"  saved graphs to {out_dir}/graphs/")
+        print("  saved the 3 graphs to " + my_folder + "/graphs/")

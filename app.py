@@ -5,93 +5,116 @@ import pandas as pd
 from core.simulator import PricingSimulator
 from core.strategies import StaticPricing, DynamicPricing, AdvancedPricing
 
+st.title("Dynamic Pricing Simulator - My Project")
+st.write("Play with the parameters on the left and see what happens.")
 
-st.title("Dynamic Pricing Simulator")
-st.write("Adjust the parameters on the left and click Run to compare pricing strategies.")
+# make a sidebar
+st.sidebar.header("Parameters Config")
 
-st.sidebar.header("Parameters")
+b_demand = st.sidebar.slider("Base Demand", 20, 300, 100, step=10)
+sens = st.sidebar.slider("Price Sensitivity", 0.5, 3.0, 1.5, step=0.1)
+i_stock = st.sidebar.slider("Initial Inventory", 100, 1000, 500, step=50)
+s_days = st.sidebar.slider("Simulation Days", 20, 200, 100, step=10)
+b_price = st.sidebar.slider("Base Price", 20, 500, 100, step=10)
+mx_cust = st.sidebar.slider("Max Customers Per Day", 50, 500, 120, step=10)
 
-base_demand   = st.sidebar.slider("Base Demand",          20,   300,  100, step=10)
-sensitivity   = st.sidebar.slider("Price Sensitivity",    0.5,  3.0,  1.5, step=0.1)
-init_stock    = st.sidebar.slider("Initial Inventory",    100, 1000,  500, step=50)
-sim_days      = st.sidebar.slider("Simulation Days",       20,  200,  100, step=10)
-base_price    = st.sidebar.slider("Base Price",            20,  500,  100, step=10)
-max_customers = st.sidebar.slider("Max Customers Per Day", 50,  500,  120, step=10)
+click = st.sidebar.button("Run The Simulation")
 
-run = st.sidebar.button("Run Simulation")
-
-if run:
-    config = {
-        "base_demand":           base_demand,
-        "sensitivity":           sensitivity,
-        "initial_inventory":     init_stock,
-        "simulation_days":       sim_days,
-        "base_price":            float(base_price),
-        "max_customers_per_day": max_customers,
+if click == True:
+    my_config_dict = {
+        "base_demand": b_demand,
+        "sensitivity": sens,
+        "initial_inventory": i_stock,
+        "simulation_days": s_days,
+        "base_price": float(b_price),
+        "max_customers_per_day": mx_cust,
     }
 
-    strategies = {
-        "static":   StaticPricing(),
-        "dynamic":  DynamicPricing(),
-        "advanced": AdvancedPricing(),
-    }
+    # setup strategies
+    my_strats = {}
+    my_strats["static"] = StaticPricing()
+    my_strats["dynamic"] = DynamicPricing()
+    my_strats["advanced"] = AdvancedPricing()
 
-    sim     = PricingSimulator(config)
-    results = sim.run_all(strategies, show_log=False)
+    my_sim = PricingSimulator(my_config_dict)
+    all_res_dict = my_sim.run_all(my_strats, show_print=False)
 
-    st.write("### Results")
-    base_rev = results["static"]["revenue"]
-    for name, data in results.items():
-        rev  = data["revenue"]
-        left = data["leftover"]
-        if name == "static":
-            st.write(f"**{name.capitalize()}** - Revenue: {rev:,.0f} | Stock left: {left} (baseline)")
+    st.write("### Simulation Results")
+    
+    # get base revenue to compare with others
+    base_revenue = all_res_dict["static"]["revenue"]
+    
+    for s_name in all_res_dict:
+        s_data = all_res_dict[s_name]
+        the_rev = s_data["revenue"]
+        the_leftover = s_data["leftover"]
+        
+        if s_name == "static":
+            st.write("**Static (Baseline)** - Revenue: $" + str(int(the_rev)) + " | Stock left: " + str(the_leftover))
         else:
-            gain = ((rev - base_rev) / base_rev) * 100
-            st.write(f"**{name.capitalize()}** - Revenue: {rev:,.0f} | Stock left: {left} | +{gain:.1f}% over static")
+            # calculate gain
+            gain_math = ((the_rev - base_revenue) / base_revenue) * 100
+            rounded_gain = round(gain_math, 1)
+            st.write("**" + s_name.capitalize() + "** - Revenue: $" + str(int(the_rev)) + " | Stock left: " + str(the_leftover) + " | +" + str(rounded_gain) + "% gain")
 
-    st.write("### Revenue Over Time")
-    fig, ax = plt.subplots(figsize=(9, 4))
-    for name, data in results.items():
-        df = data["data"]
-        ax.plot(df["day"], df["total_revenue"], label=name)
-    ax.set_xlabel("Day")
-    ax.set_ylabel("Cumulative Revenue")
-    ax.legend()
-    ax.grid(True)
-    st.pyplot(fig)
-    plt.close(fig)
+    st.write("### Graph: Revenue Over Time")
+    fig1, my_ax1 = plt.subplots(figsize=(9, 4))
+    for s_name in all_res_dict:
+        df1 = all_res_dict[s_name]["data"]
+        my_ax1.plot(df1["day"], df1["total_revenue"], label=s_name)
+    my_ax1.set_xlabel("Days")
+    my_ax1.set_ylabel("Revenue so far")
+    my_ax1.legend()
+    my_ax1.grid(True)
+    st.pyplot(fig1)
+    
+    # need to close plot so it doesnt build up memory
+    plt.close(fig1)
 
-    st.write("### Price Changes Over Time")
-    fig2, ax2 = plt.subplots(figsize=(9, 4))
-    for name, data in results.items():
-        df = data["data"]
-        ax2.plot(df["day"], df["price"], label=name)
-    ax2.set_xlabel("Day")
-    ax2.set_ylabel("Price")
-    ax2.legend()
-    ax2.grid(True)
+    st.write("### Graph: Price Changes")
+    fig2, my_ax2 = plt.subplots(figsize=(9, 4))
+    for s_name in all_res_dict:
+        df2 = all_res_dict[s_name]["data"]
+        my_ax2.plot(df2["day"], df2["price"], label=s_name)
+    my_ax2.set_xlabel("Days")
+    my_ax2.set_ylabel("Current Price")
+    my_ax2.legend()
+    my_ax2.grid(True)
     st.pyplot(fig2)
     plt.close(fig2)
 
-    st.write("### Total Revenue Comparison")
-    fig3, ax3 = plt.subplots(figsize=(6, 4))
-    names = list(results.keys())
-    revs  = [results[s]["revenue"] for s in names]
-    ax3.bar(names, revs, color=["gray", "steelblue", "seagreen"])
-    ax3.set_ylabel("Revenue")
-    for i, v in enumerate(revs):
-        ax3.text(i, v + 100, str(int(v)), ha="center")
+    st.write("### Graph: Total Revenue")
+    fig3, my_ax3 = plt.subplots(figsize=(6, 4))
+    
+    # lists for bar chart
+    x_list = []
+    y_list = []
+    for s_name in all_res_dict:
+        x_list.append(s_name)
+        y_list.append(all_res_dict[s_name]["revenue"])
+        
+    my_ax3.bar(x_list, y_list, color=["grey", "blue", "green"])
+    my_ax3.set_ylabel("Total Revenue")
+    
+    # put the number on top of the bar
+    for counter in range(len(y_list)):
+        val = y_list[counter]
+        my_ax3.text(counter, val + 100, str(int(val)), ha="center")
+        
     st.pyplot(fig3)
     plt.close(fig3)
 
-    with st.expander("Show raw data"):
-        frames = []
-        for name, data in results.items():
-            df = data["data"].copy()
-            df["strategy_name"] = name
-            frames.append(df)
-        st.dataframe(pd.concat(frames, ignore_index=True))
+    # raw data section
+    with st.expander("Click here to see raw pandas data"):
+        df_list = []
+        for s_name in all_res_dict:
+            # make a copy so we don't mess up original
+            temp_df = all_res_dict[s_name]["data"].copy()
+            temp_df["strategy_name"] = s_name
+            df_list.append(temp_df)
+            
+        final_table = pd.concat(df_list, ignore_index=True)
+        st.dataframe(final_table)
 
 else:
-    st.write("Set the parameters in the sidebar and click Run Simulation.")
+    st.write("Change the parameters if you want and then click Run.")
