@@ -6,7 +6,7 @@ Finding the optimal price for a product over time is challenging when inventory 
 ## Utility
 This project provides a simulation environment to model various pricing strategies against dynamic market conditions. By mimicking different customer price sensitivities and random demand intervals, the system demonstrates how dynamic pricing can effectively optimize total revenue and inventory clearance when compared to standard stationary pricing models.
 
-This is especially useful to visualize the output as you can tweak parameters in real-time, by changing them either in the `config.json` file or via the Streamlit dashboard mentioned below.
+This is very useful to visualize the output as you can tweak parameters in real-time, by changing them either in the `config.json` file or via the Streamlit dashboard mentioned below.
 
 ## Pricing Strategies Implemented
 * **Static Pricing:** Keeps the price exactly the same throughout the simulation. Used as a simple baseline for comparison.
