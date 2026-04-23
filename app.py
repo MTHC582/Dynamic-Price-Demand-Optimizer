@@ -5,8 +5,7 @@ import pandas as pd
 from core.simulator import PricingSimulator
 from core.strategies import StaticPricing, DynamicPricing, AdvancedPricing
 
-st.title("Dynamic Pricing Simulator - My Project")
-st.write("Play with the parameters on the left and see what happens.")
+st.title("Dynamic Pricing Simulator")
 
 # make a sidebar
 st.sidebar.header("Parameters Config")
@@ -40,22 +39,37 @@ if click == True:
     all_res_dict = my_sim.run_all(my_strats, show_print=False)
 
     st.write("### Simulation Results")
-    
+
     # get base revenue to compare with others
     base_revenue = all_res_dict["static"]["revenue"]
-    
+
     for s_name in all_res_dict:
         s_data = all_res_dict[s_name]
         the_rev = s_data["revenue"]
         the_leftover = s_data["leftover"]
-        
+
         if s_name == "static":
-            st.write("**Static (Baseline)** - Revenue: $" + str(int(the_rev)) + " | Stock left: " + str(the_leftover))
+            st.write(
+                "**Static (Baseline)** - Revenue: $"
+                + str(int(the_rev))
+                + " | Stock left: "
+                + str(the_leftover)
+            )
         else:
             # calculate gain
             gain_math = ((the_rev - base_revenue) / base_revenue) * 100
             rounded_gain = round(gain_math, 1)
-            st.write("**" + s_name.capitalize() + "** - Revenue: $" + str(int(the_rev)) + " | Stock left: " + str(the_leftover) + " | +" + str(rounded_gain) + "% gain")
+            st.write(
+                "**"
+                + s_name.capitalize()
+                + "** - Revenue: $"
+                + str(int(the_rev))
+                + " | Stock left: "
+                + str(the_leftover)
+                + " | +"
+                + str(rounded_gain)
+                + "% gain"
+            )
 
     st.write("### Graph: Revenue Over Time")
     fig1, my_ax1 = plt.subplots(figsize=(9, 4))
@@ -67,8 +81,7 @@ if click == True:
     my_ax1.legend()
     my_ax1.grid(True)
     st.pyplot(fig1)
-    
-    # need to close plot so it doesnt build up memory
+
     plt.close(fig1)
 
     st.write("### Graph: Price Changes")
@@ -85,36 +98,36 @@ if click == True:
 
     st.write("### Graph: Total Revenue")
     fig3, my_ax3 = plt.subplots(figsize=(6, 4))
-    
+
     # lists for bar chart
     x_list = []
     y_list = []
     for s_name in all_res_dict:
         x_list.append(s_name)
         y_list.append(all_res_dict[s_name]["revenue"])
-        
+
     my_ax3.bar(x_list, y_list, color=["grey", "blue", "green"])
     my_ax3.set_ylabel("Total Revenue")
-    
+
     # put the number on top of the bar
     for counter in range(len(y_list)):
         val = y_list[counter]
         my_ax3.text(counter, val + 100, str(int(val)), ha="center")
-        
+
     st.pyplot(fig3)
     plt.close(fig3)
 
     # raw data section
-    with st.expander("Click here to see raw pandas data"):
+    with st.expander("Click here for raw pandas data"):
         df_list = []
         for s_name in all_res_dict:
-            # make a copy so we don't mess up original
+            # makin a copy not to mess it yp the orig..
             temp_df = all_res_dict[s_name]["data"].copy()
             temp_df["strategy_name"] = s_name
             df_list.append(temp_df)
-            
+
         final_table = pd.concat(df_list, ignore_index=True)
         st.dataframe(final_table)
 
 else:
-    st.write("Change the parameters if you want and then click Run.")
+    st.write("Change the parameters and click Run.")
