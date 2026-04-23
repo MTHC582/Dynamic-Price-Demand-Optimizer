@@ -1,56 +1,65 @@
-# Dynamic Pricing and Demand Simulator
+# Dynamic Price and Demand Optimizer
 
-A simulation engine designed to evaluate different pricing strategies across various market conditions and customer segments.
+## Problem Statement
+Finding the optimal price for a product over time is challenging when inventory is fixed, customer demand fluctuates, and the specific selling period is limited. Maintaining a static price often leads to either selling out inventory too early or being left with excess stock at the end of a product cycle. 
 
-## Overview
-This system models a retail environment over a defined simulation period. It allows for the comparison of static and dynamic pricing models by tracking revenue, inventory depletion, and customer demand.
+## Utility
+This project provides a simulation environment to model various pricing strategies against dynamic market conditions. By mimicking different customer price sensitivities and random demand intervals, the system demonstrates how dynamic pricing can effectively optimize total revenue and inventory clearance when compared to standard stationary pricing models.
 
-### Features
-- **Market Modeling**: Simulates Budget, Regular, and Urgent customer segments with varying price elasticity.
-- **Demand Logic**: Uses Poisson distribution to simulate stochastic customer arrivals.
-- **Pricing Strategies**:
-    - **Static**: Constant price baseline.
-    - **Dynamic**: Reactive pricing based on remaining inventory and time metrics.
-    - **Advanced**: Heuristic-based pricing using an urgency factor (stock vs. time ratio).
-- **Visualization**: Generates cumulative revenue and price trend graphs.
-- **Interactive UI**: Includes a Streamlit interface for real-time parameter adjustment.
+This is especially useful to visualize the output as you can tweak parameters in real-time, by changing them either in the `config.json` file or via the Streamlit dashboard mentioned below.
 
-## Installation
-Requires Python 3.x and the following dependencies:
+## Installation and Setup
 
+### 1. Clone the Repository
 ```bash
-pip install pandas matplotlib numpy streamlit
+git clone https://github.com/MTHC582/Dynamic-Price-Demand-Optimizer
+cd Dynamic-Price-Demand-Optimizer
 ```
 
-## Usage
+### NOTE: Suggested to create and activate a virtual environment
 
-### CLI Mode
-To run the simulation using settings from `config.json` and output results to the terminal:
+### 2. Install Requirements
+```bash
+pip install -r requirements.txt
+```
+
+## Running the Application
+
+There are two separate ways to operate the simulator: through a standard terminal interface or via an interactive web dashboard.
+
+### Command Line Execution
+To run a fast background simulation that outputs results and graphs, use the following bash command:
 ```bash
 python main.py
 ```
+*Note: If you have this project loaded in an IDE (such as VSCode or PyCharm), you can also execute this by running the `main.py` file directly within your editor.*
 
-### Dashboard Mode
-To launch the interactive web interface:
+### Streamlit Dashboard
+#### "This was added on a later run"  
+If you prefer a visual interface where you can experiment with parameter adjustments through interactive sliders, run the Streamlit application:
 ```bash
 streamlit run app.py
 ```
 
-## Project Structure
-```text
-.
-├── core/
-│   ├── analysis.py       
-│   ├── market.py         
-│   ├── simulator.py      
-│   └── strategies.py     
-├── output/  
-│   ├── graphs       
-│   └── results.csv                    
-├── app.py                
-├── main.py               
-├── config.json          
-├── requirements.txt      
-└── README.md
-```
+## Final Directory Structure
+After cloning, installing dependencies, and running the simulation (`main.py`) at least once, your final repository structure should resemble the format below:
 
+```text
+Dynamic-Price-Demand-Optimizer/
+|-- core/
+|   |-- analysis.py
+|   |-- market.py
+|   |-- simulator.py
+|   |-- strategies.py
+|-- output/
+|   |-- graphs/
+|   |   |-- price_over_time.png
+|   |   |-- revenue_vs_time.png
+|   |   |-- strategy_comparison.png
+|   |-- results.csv
+|-- app.py
+|-- main.py
+|-- config.json
+|-- requirements.txt
+|-- README.md
+```
