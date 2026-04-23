@@ -109,7 +109,7 @@ if click == True:
     my_ax3.bar(x_list, y_list, color=["grey", "blue", "green"])
     my_ax3.set_ylabel("Total Revenue")
 
-    # put the number on top of the bar
+    # To put the number over top of the bar
     for counter in range(len(y_list)):
         val = y_list[counter]
         my_ax3.text(counter, val + 100, str(int(val)), ha="center")
