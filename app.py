@@ -19,7 +19,7 @@ mx_cust = st.sidebar.slider("Max Customers Per Day", 50, 500, 120, step=10)
 
 click = st.sidebar.button("Run The Simulation")
 
-if click == True:
+if click:
     my_config_dict = {
         "base_demand": b_demand,
         "sensitivity": sens,
