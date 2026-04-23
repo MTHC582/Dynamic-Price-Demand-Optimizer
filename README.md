@@ -75,6 +75,7 @@ Dynamic-Price-Demand-Optimizer/
 |   |   |-- revenue_vs_time.png
 |   |   |-- strategy_comparison.png
 |   |-- results.csv
+|-- .gitignore
 |-- app.py
 |-- main.py
 |-- config.json
