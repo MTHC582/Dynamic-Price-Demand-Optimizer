@@ -8,13 +8,11 @@ This project provides a simulation environment to model various pricing strategi
 
 This is especially useful to visualize the output as you can tweak parameters in real-time, by changing them either in the `config.json` file or via the Streamlit dashboard mentioned below.
 
-<<<<<<< HEAD
 ## Pricing Strategies Implemented
 * **Static Pricing:** Keeps the price exactly the same throughout the simulation. Used as a simple baseline for comparison.
 * **Dynamic Pricing:** Automatically adjusts the price by checking the ratio of how much time is left versus how much stock is left.
 * **Advanced Pricing:** Calculates an "urgency score" to apply deep discounts if there is way too much stock, or higher markups if inventory is quickly running out.
-=======
->>>>>>> 24590fb6adcb006678e2ae70878488792d240188
+
 ## Installation and Setup
 
 ### 1. Clone the Repository
@@ -23,7 +21,6 @@ git clone https://github.com/MTHC582/Dynamic-Price-Demand-Optimizer
 cd Dynamic-Price-Demand-Optimizer
 ```
 
-<<<<<<< HEAD
 ### 2. Create and Activate a Virtual Environment
 It is highly recommended to create and activate a virtual environment before installing dependencies, to prevent conflicts with your system packages.
 
@@ -40,11 +37,6 @@ source venv/bin/activate
 ```
 
 ### 3. Install Requirements
-=======
-### NOTE: Suggested to create and activate a virtual environment
-
-### 2. Install Requirements
->>>>>>> 24590fb6adcb006678e2ae70878488792d240188
 ```bash
 pip install -r requirements.txt
 ```
