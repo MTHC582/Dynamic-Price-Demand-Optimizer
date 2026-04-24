@@ -67,6 +67,7 @@ This project initially started as a simple command-line (CLI-based) simulation f
 We began by developing the core components, such as the MarketEnvironment and the underlying pricing logic, using Python and NumPy. This phase was centered on getting the mathematical and simulation aspects right.
 #### Streamlit Integration:
 As the project progressed, we realized that a command-line interface might not be very intuitive for all users. To make the system more interactive and user-friendly, we extended it by integrating a Streamlit dashboard. This allowed users to easily adjust parameters like price sensitivity and initial inventory, and instantly see how those changes affect the results through visualizations.
+#### Here is a Video Reference for StreamLit we took this from: https://youtu.be/D0D4Pa22iG0?si=pRRahDVBupA5TroG
 
 ## Final Directory Structure
 After cloning, installing dependencies, and running the simulation (`main.py`) at least once, your final repository structure should resemble the format below:
